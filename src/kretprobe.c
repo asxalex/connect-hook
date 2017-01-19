@@ -40,7 +40,7 @@ static int entry_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
     struct my_data *data;
     data = (struct my_data *)ri->data;
     data->fd = regs->di;
-	return 0;
+    return 0;
 }
 
 /*
@@ -79,7 +79,7 @@ static int ret_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
                 current->comm, current->pid, fd, inet->inet_sport, inet->inet_daddr, inet->inet_dport);
 
 out:
-	return 0;
+    return 0;
 }
 
 static struct kretprobe my_kretprobe = {
