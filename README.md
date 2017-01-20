@@ -16,7 +16,7 @@ dmesg
 to view the result. The result looks like this:
 
 ```
-[10827.747986] task[python2] pid[13976] fd[3] from localport[5680] -> dest[16777343:38175]
+[ 4073.985367] sys_connect[-115]: task[Chrome_IOThread] pid[6775] fd[131] from localport[192.168.1.29:58026] -> dest[180.97.33.107:443]
 ```
 
 the `localport` and `dest` are both represented as **network byte order**.
