@@ -34,6 +34,14 @@ struct my_data {
 	int fd;
 };
 
+void long2ip(long l, char *ip) {
+    sprintf(ip, "%ld.%ld.%ld.%ld",
+            ((0xff << 24) & l) >> 24,
+            ((0xff << 16) & l) >> 16,
+            ((0xff << 8) & l) >> 8,
+            (0xff & l));
+}
+
 /* Here we use the entry_hanlder to timestamp function entry */
 static int entry_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
 {
@@ -58,25 +66,32 @@ static int ret_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
     int fd;
     struct inet_sock *inet;
 
-    if (retval) {
-        goto out;
-    }
+    char ip[16];
+    char local[16];
 
     data = (struct my_data *)ri->data;
     fd = data->fd;
     sock = sockfd_lookup(fd, &err);
     if (!sock) {
-        printk(KERN_INFO "failed to get socket\n");
         goto out;
     }
 
     sk = sock->sk;
-
     inet = (struct inet_sock*)sk;
 
-    if (inet->inet_dport)
-        printk(KERN_INFO "task[%s] pid[%d] fd[%d] from localport[%d] -> dest[%d:%d]",
-                current->comm, current->pid, fd, inet->inet_sport, inet->inet_daddr, inet->inet_dport);
+    if (inet->inet_dport) {
+        long2ip(htonl(inet->inet_daddr), ip);
+        long2ip(htonl(inet->inet_saddr), local);
+        printk(KERN_INFO "sys_connect[%d]: task[%s] pid[%d] fd[%d] from localport[%s:%d] -> dest[%s:%d]",
+                retval,
+                current->comm, 
+                current->pid, 
+                fd, 
+                local,
+                htons(inet->inet_sport), 
+                ip, 
+                htons(inet->inet_dport));
+    }
 
 out:
     return 0;
